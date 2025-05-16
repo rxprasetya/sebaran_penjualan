@@ -1,0 +1,25 @@
+.submenu {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.submenu-open {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.sidebar-item.has-sub>.submenu {
+  display: block !important;
+  /* override bawaan Mazer yang pakai display: none */
+}
+
+.w-10{
+  width: 64px;
+}
+
+.css-1s2u09g-control {
+  background-color: #1e1e2f !important;
+  color: #fff !important;
+}
