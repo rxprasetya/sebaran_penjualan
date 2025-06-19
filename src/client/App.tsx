@@ -2,7 +2,6 @@ import './templates/dist/assets/compiled/css/app.css'
 import './templates/dist/assets/compiled/css/app-dark.css'
 import './templates/dist/assets/compiled/css/iconly.css'
 import './templates/dist/assets/compiled/css/auth.css'
-import 'rc-tree/assets/index.css';
 import { Route, Routes } from "react-router-dom"
 import Sidebar from "./pages/global/Sidebar"
 import PageTitle from './components/PageTitle'
@@ -17,6 +16,10 @@ import SalesCoverageAreaActionForm from './pages/SalesCoverageArea/SalesCoverage
 import Retail from './pages/Retail';
 import RetailActionForm from './pages/Retail/RetailFormAction';
 import Login from './pages/Login';
+import ProductDistributionArea from './pages/Product/ProductDistributionArea/index';
+import ProductCompetitor from './pages/Product/ProductCompetitor/index';
+import ProductDistributionAreaAction from './pages/Product/ProductDistributionArea/ProductDistributionAreaAction';
+import ProductCompetitorAction from './pages/Product/ProductCompetitor/ProductCompetitorAction';
 
 function App() {
   return (
@@ -78,11 +81,67 @@ function App() {
             </>
           }
         />
+        <Route path="/product/preview/:id"
+          element={
+            <>
+              <Sidebar CustomComponent={ProductFormAction} />
+              <PageTitle title='Preview Product Page' />
+            </>
+          }
+        />
         <Route path="/product/update/:id"
           element={
             <>
               <Sidebar CustomComponent={ProductFormAction} />
               <PageTitle title='Update Product Page' />
+            </>
+          }
+        />
+        <Route path="/product/:productID/competitor"
+          element={
+            <>
+              <Sidebar CustomComponent={ProductCompetitor} />
+              <PageTitle title='Product Competitors Page' />
+            </>
+          }
+        />
+        <Route path="/product/:productID/competitor/create"
+          element={
+            <>
+              <Sidebar CustomComponent={ProductCompetitorAction} />
+              <PageTitle title='Create Competitor Page' />
+            </>
+          }
+        />
+        <Route path="/product/:productID/competitor/update/:id"
+          element={
+            <>
+              <Sidebar CustomComponent={ProductCompetitorAction} />
+              <PageTitle title='Update Competitor Page' />
+            </>
+          }
+        />
+        <Route path="/product/:productID/distribution-area"
+          element={
+            <>
+              <Sidebar CustomComponent={ProductDistributionArea} />
+              <PageTitle title='Distribution Areas Page' />
+            </>
+          }
+        />
+        <Route path="/product/:productID/distribution-area/create"
+          element={
+            <>
+              <Sidebar CustomComponent={ProductDistributionAreaAction} />
+              <PageTitle title='Create Distribution Area Page' />
+            </>
+          }
+        />
+        <Route path="/product/:productID/distribution-area/update/:id"
+          element={
+            <>
+              <Sidebar CustomComponent={ProductDistributionAreaAction} />
+              <PageTitle title='Update Distribution Area Page' />
             </>
           }
         />

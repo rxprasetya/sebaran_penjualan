@@ -49,23 +49,39 @@ const Retail = () => {
 
         if (result.isConfirmed) {
             try {
-                await fetch(`http://localhost:3000/api/retails/delete/${id}`, {
+                const res = await fetch(`http://localhost:3000/api/retails/delete/${id}`, {
                     method: 'DELETE'
                 });
 
-                await swalWithBootstrapButtons.fire({
-                    title: "Deleted!",
-                    text: "Data has been deleted.",
-                    icon: "success"
-                });
+                if (res.ok) {
+                    fetchRetail();
+                    await swalWithBootstrapButtons.fire({
+                        title: "Deleted!",
+                        text: "Data has been deleted successfully.",
+                        icon: "success"
+                    });
+                }
 
-                fetchRetail();
             } catch (error: any) {
                 console.log(error);
                 Swal.fire("Error!", "There was a problem deleting the data.", "error");
             }
         }
     };
+
+    useEffect(() => {
+        const successMessage = localStorage.getItem('successMessage');
+        if (successMessage) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: successMessage,
+                showConfirmButton: true
+            });
+
+            localStorage.removeItem('successMessage');
+        }
+    }, []);
 
     useEffect(() => {
         fetchRetail()
@@ -111,25 +127,39 @@ const Retail = () => {
                                     <th>Province</th>
                                     <th>City</th>
                                     <th>District</th>
+                                    <th>Village</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {retails.map((item: any, idx: number) => (
-                                    <tr key={idx}>
-                                        <td>{idx + 1}</td>
-                                        <td>{item.retailName}</td>
-                                        <td>{item.provinceName}</td>
-                                        <td>{item.cityName}</td>
-                                        <td>{item.districtName}</td>
-                                        <td>
-                                            <div className="flex">
-                                                <Link className='badge bg-success me-2' to={`/retail/update/${item.id}`}>Update</Link>
-                                                <Link className='badge bg-danger' to={`#`} onClick={() => onDelete(item.id)}>Delete</Link>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {
+                                    retails.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="text-center">No records found.</td>
+                                        </tr>
+                                    ) : (
+                                        retails.map((item: any, idx: number) => (
+                                            <tr key={idx}>
+                                                <td>{idx + 1}</td>
+                                                <td>{item.retailName}</td>
+                                                <td>{item.provinceName}</td>
+                                                <td>{item.cityName}</td>
+                                                <td>{item.districtName}</td>
+                                                <td>{item.villageName}</td>
+                                                <td>
+                                                    <div className="flex">
+                                                        <Link className='badge bg-success me-2' to={`/retail/update/${item.id}`}>
+                                                            <i className="bi bi-pencil-square"></i>
+                                                        </Link>
+                                                        <Link className='badge bg-danger' to={`#`} onClick={() => onDelete(item.id)}>
+                                                            <i className="bi bi-trash"></i>
+                                                        </Link>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )
+                                }
                             </tbody>
                         </table>
                     </div>

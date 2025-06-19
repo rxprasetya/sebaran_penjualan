@@ -1,28 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom';
-import { DataTable } from 'simple-datatables';
-import "simple-datatables/dist/style.css";
+import { Link, useParams } from 'react-router-dom'
+import { DataTable } from 'simple-datatables'
 import Swal from 'sweetalert2'
 
+function ProductDistributionArea() {
+    const { productID } = useParams()
+    const [productDistributionArea, setProductDistributionArea] = useState([])
 
-type DataSalesCoverageArea = {
-    id: number,
-    name: string,
-    province: string,
-    city: string,
-    district: string,
-    village: string,
-}
-
-const SalesCoverageArea = () => {
-
-    const [salesCoverageAreas, setSalesCoverageAreas] = useState<DataSalesCoverageArea[]>([])
-
-    const fetchSalesCoverageArea = async () => {
+    const fetchproductDistributionArea = async (productID: number) => {
         try {
-            const res = await fetch('http://localhost:3000/api/salescoverageareas/', { method: 'GET' })
+            const res = await fetch(`http://localhost:3000/api/products/${productID}/productdistributionareas/`, { method: 'GET' })
             const data = await res.json()
-            setSalesCoverageAreas(data.data)
+            setProductDistributionArea(data.data)
             // console.log(data.data)
         } catch (error: any) {
             console.log(error)
@@ -49,25 +38,21 @@ const SalesCoverageArea = () => {
 
         if (result.isConfirmed) {
             try {
-                const res = await fetch(`http://localhost:3000/api/salescoverageareas/delete/${id}`, {
-                    method: 'DELETE'
-                });
-
+                const res = await fetch(`http://localhost:3000/api/products/${productID}/productdistributionareas/delete/` + id, { method: 'DELETE' })
                 if (res.ok) {
-                    fetchSalesCoverageArea();
-                    await swalWithBootstrapButtons.fire({
-                        title: "Deleted!",
-                        text: "Data has been deleted.",
-                        icon: "success"
+                    fetchproductDistributionArea(Number(productID))
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Data has been deleted successfully.',
+                        showConfirmButton: true
                     });
-
                 }
             } catch (error: any) {
-                console.log(error);
-                Swal.fire("Error!", "There was a problem deleting the data.", "error");
+                console.log(error)
             }
         }
-    };
+    }
 
     useEffect(() => {
         const successMessage = localStorage.getItem('successMessage');
@@ -84,33 +69,34 @@ const SalesCoverageArea = () => {
     }, []);
 
     useEffect(() => {
-        fetchSalesCoverageArea()
+        fetchproductDistributionArea(Number(productID))
     }, [])
 
     useEffect(() => {
-        if (salesCoverageAreas.length > 0) {
+        if (productDistributionArea.length > 0) {
             const tableElement = document.querySelector("#table1") as HTMLTableElement | null;
             if (tableElement) {
                 new DataTable(tableElement);
             }
         }
-    }, [salesCoverageAreas]);
+    }, [productDistributionArea]);
 
     return (
         <div className="page-heading">
             <div className="page-title">
                 <div className="row">
                     <div className="col-12 col-md-6 order-md-1 order-last">
-                        <h3>Sales Areas DataTable</h3>
+                        <h3>Distribution Areas DataTable</h3>
                         <p className="text-subtitle text-muted">A sortable, searchable, paginated table without
                             dependencies thanks to simple-datatables.</p>
-                        <Link to={'/sales-coverage-area/create'} className="btn btn-primary mb-2">Create</Link>
+                        <Link to={`/product/${productID}/distribution-area/create`} className="btn btn-primary mb-2">Create</Link>
                     </div>
                     <div className="col-12 col-md-6 order-md-2 order-first">
                         <nav aria-label="breadcrumb" className="breadcrumb-header float-start float-lg-end">
                             <ol className="breadcrumb">
                                 <li className="breadcrumb-item"><Link to={'/'}>Dashboard</Link></li>
-                                <li className="breadcrumb-item active" aria-current="page">Sales Areas DataTable</li>
+                                <li className="breadcrumb-item"><Link to={`/product/preview/${productID}`}>Preview Product</Link></li>
+                                <li className="breadcrumb-item active" aria-current="page">Distribution Areas DataTable</li>
                             </ol>
                         </nav>
                     </div>
@@ -123,7 +109,7 @@ const SalesCoverageArea = () => {
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>Sales</th>
+                                    {/* <th>Product</th> */}
                                     <th>Province</th>
                                     <th>City</th>
                                     <th>District</th>
@@ -133,25 +119,25 @@ const SalesCoverageArea = () => {
                             </thead>
                             <tbody>
                                 {
-                                    salesCoverageAreas.length === 0 ? (
+                                    productDistributionArea.length === 0 ? (
                                         <tr>
-                                            <td colSpan={7} className="text-center">No records found.</td>
+                                            <td colSpan={6} className="text-center">No records found.</td>
                                         </tr>
                                     ) : (
-                                        salesCoverageAreas.map((item: any, idx: number) => (
+                                        productDistributionArea.map((item: any, idx: number) => (
                                             <tr key={idx}>
                                                 <td>{idx + 1}</td>
-                                                <td>{item.name}</td>
-                                                <td>{item.province}</td>
-                                                <td>{item.city}</td>
-                                                <td>{item.district}</td>
-                                                <td>{item.village}</td>
-                                                <td>
+                                                {/* <td>[{item.productCode}] {item.productName}</td> */}
+                                                <td>{item.provinceName}</td>
+                                                <td>{item.cityName}</td>
+                                                <td>{item.districtName}</td>
+                                                <td>{item.villageName}</td>
+                                                <td className='w-25'>
                                                     <div className="flex">
-                                                        <Link className='badge bg-success me-2' to={`/sales-coverage-area/update/${item.id}`}>
+                                                        <Link className='badge bg-success me-2' to={`/product/${productID}/distribution-area/update/${item.pdaID}`}>
                                                             <i className="bi bi-pencil-square"></i>
                                                         </Link>
-                                                        <Link className='badge bg-danger' to={`#`} onClick={() => onDelete(item.id)}>
+                                                        <Link className='badge bg-danger' to={`#`} onClick={() => onDelete(item.pdaID)}>
                                                             <i className="bi bi-trash"></i>
                                                         </Link>
                                                     </div>
@@ -169,4 +155,4 @@ const SalesCoverageArea = () => {
     )
 }
 
-export default SalesCoverageArea
+export default ProductDistributionArea

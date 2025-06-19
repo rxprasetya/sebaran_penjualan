@@ -36,16 +36,44 @@ const Employee = () => {
             cancelButtonText: "Cancel",
         });
 
-        if (result.isConfirmed) {
-            try {
+        try {
+            if (result.isConfirmed) {
                 const res = await fetch('http://localhost:3000/api/employees/delete/' + id, { method: 'DELETE' })
-                const data = res.json()
-                window.location.reload()
-            } catch (error: any) {
-                console.log(error)
+
+                if (res.ok) {
+                    fetchEmployee()
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Data has been deleted successfully.',
+                        showConfirmButton: true
+                    });
+                } else {
+                    swalWithBootstrapButtons.fire({
+                        title: "Error",
+                        text: "Data employee still have a relation to sales distribution areas.",
+                        icon: "error"
+                    });
+                }
             }
+        } catch (error: any) {
+            console.log(error)
         }
     }
+
+    useEffect(() => {
+        const successMessage = localStorage.getItem('successMessage');
+        if (successMessage) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: successMessage,
+                showConfirmButton: true
+            });
+
+            localStorage.removeItem('successMessage');
+        }
+    }, []);
 
     useEffect(() => {
         fetchEmployee()
@@ -94,20 +122,32 @@ const Employee = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {employees.map((item: any, idx: number) => (
-                                    <tr key={idx}>
-                                        <td>{idx + 1}</td>
-                                        <td>{item.employeeCode}</td>
-                                        <td>{item.employeeName}</td>
-                                        <td>{item.employeePosition}</td>
-                                        <td>
-                                            <div className="flex">
-                                                <Link className='badge bg-success me-2' to={`/employee/update/${item.id}`}>Update</Link>
-                                                <Link className='badge bg-danger' to={`#`} onClick={() => onDelete(item.id)}>Delete</Link>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {
+                                    employees.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={5} className="text-center">No records found.</td>
+                                        </tr>
+                                    ) : (
+                                        employees.map((item: any, idx: number) => (
+                                            <tr key={idx}>
+                                                <td>{idx + 1}</td>
+                                                <td>{item.employeeCode}</td>
+                                                <td>{item.employeeName}</td>
+                                                <td>{item.employeePosition}</td>
+                                                <td>
+                                                    <div className="flex">
+                                                        <Link className='badge bg-success me-2' to={`/employee/update/${item.id}`}>
+                                                            <i className="bi bi-pencil-square"></i>
+                                                        </Link>
+                                                        <Link className='badge bg-danger' to={`#`} onClick={() => onDelete(item.id)}>
+                                                            <i className="bi bi-trash"></i>
+                                                        </Link>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )
+                                }
                             </tbody>
                         </table>
                     </div>

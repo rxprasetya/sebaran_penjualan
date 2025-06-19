@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Heading from '../../components/Heading'
 import Map from '../Map'
 import profile from './../../templates/dist/assets/compiled//jpg/1.jpg'
@@ -7,9 +7,28 @@ import { useNavigate } from 'react-router-dom'
 const Dashboard = () => {
 
     const nav = useNavigate()
+    const [totalEmployees, setTotalEmployees] = useState()
+    const [totalProducts, setTotalProducts] = useState()
+    const [totalAreas, setTotalAreas] = useState()
+    const [totalRetails, setTotalRetails] = useState()
+
+    const fetchTotal = async () => {
+        try {
+            const res = await fetch('http://localhost:3000/api/total', { method: 'GET' })
+            const data = await res.json()
+
+            setTotalEmployees(data.data.totalEmployees[0].count);
+            setTotalProducts(data.data.totalProducts[0].count);
+            setTotalAreas(data.data.totalAreas[0].count);
+            setTotalRetails(data.data.totalRetails[0].count);
+        } catch (error: any) {
+            console.log(error)
+        }
+    }
 
     useEffect(() => {
         !localStorage.getItem('auth') && nav('/login')
+        fetchTotal()
     }, [])
     return (
         <>
@@ -24,12 +43,12 @@ const Dashboard = () => {
                                         <div
                                             className="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start ">
                                             <div className="stats-icon purple mb-2">
-                                                <i className="iconly-boldShow"></i>
+                                                <i className="iconly-boldProfile"></i>
                                             </div>
                                         </div>
                                         <div className="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
-                                            <h6 className="text-muted font-semibold">Profile Views</h6>
-                                            <h6 className="font-extrabold mb-0">112.000</h6>
+                                            <h6 className="text-muted font-semibold">Sales</h6>
+                                            <h6 className="font-extrabold mb-0">{totalEmployees === 0 ? 'No Available' : totalEmployees}</h6>
                                         </div>
                                     </div>
                                 </div>
@@ -42,12 +61,12 @@ const Dashboard = () => {
                                         <div
                                             className="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start ">
                                             <div className="stats-icon blue mb-2">
-                                                <i className="iconly-boldProfile"></i>
+                                                <i className="iconly-boldBag-2"></i>
                                             </div>
                                         </div>
                                         <div className="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
-                                            <h6 className="text-muted font-semibold">Followers</h6>
-                                            <h6 className="font-extrabold mb-0">183.000</h6>
+                                            <h6 className="text-muted font-semibold">Products</h6>
+                                            <h6 className="font-extrabold mb-0">{totalProducts === 0 ? 'No Available' : totalProducts}</h6>
                                         </div>
                                     </div>
                                 </div>
@@ -60,12 +79,12 @@ const Dashboard = () => {
                                         <div
                                             className="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start ">
                                             <div className="stats-icon green mb-2">
-                                                <i className="iconly-boldAdd-User"></i>
+                                                <i className="iconly-boldLocation"></i>
                                             </div>
                                         </div>
                                         <div className="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
-                                            <h6 className="text-muted font-semibold">Following</h6>
-                                            <h6 className="font-extrabold mb-0">80.000</h6>
+                                            <h6 className="text-muted font-semibold">Areas</h6>
+                                            <h6 className="font-extrabold mb-0">{totalAreas === 0 ? 'No Available' : totalAreas}</h6>
                                         </div>
                                     </div>
                                 </div>
@@ -78,12 +97,12 @@ const Dashboard = () => {
                                         <div
                                             className="col-md-4 col-lg-12 col-xl-12 col-xxl-5 d-flex justify-content-start ">
                                             <div className="stats-icon red mb-2">
-                                                <i className="iconly-boldBookmark"></i>
+                                                <i className="iconly-boldBuy"></i>
                                             </div>
                                         </div>
                                         <div className="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
-                                            <h6 className="text-muted font-semibold">Saved Post</h6>
-                                            <h6 className="font-extrabold mb-0">112</h6>
+                                            <h6 className="text-muted font-semibold">Retails</h6>
+                                            <h6 className="font-extrabold mb-0">{totalRetails === 0 ? 'No Available' : totalRetails}</h6>
                                         </div>
                                     </div>
                                 </div>
@@ -99,7 +118,7 @@ const Dashboard = () => {
                                     <img src={profile} alt="Face 1" />
                                 </div>
                                 <div className="ms-3 name">
-                                    <h5 className="font-bold">Admin</h5>
+                                    <h5 className="font-bold">{localStorage.getItem('user')}</h5>
                                     <h6 className="text-muted mb-0">Super Admin</h6>
                                 </div>
                             </div>

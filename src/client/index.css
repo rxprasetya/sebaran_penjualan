@@ -15,11 +15,28 @@
   /* override bawaan Mazer yang pakai display: none */
 }
 
-.w-10{
+.w-10 {
   width: 64px;
 }
 
 .css-1s2u09g-control {
   background-color: #1e1e2f !important;
   color: #fff !important;
+}
+
+.modal.fade.show.d-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 1rem;
+}
+
+.modal-content {
+  max-width: 800px;
+  width: 100%;
+  background-color: #1e1e2f;
+  /* Sesuaikan dark mode kamu */
+  border-radius: 10px;
+  overflow: hidden;
 }

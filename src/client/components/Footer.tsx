@@ -13,7 +13,7 @@ const Footer: React.FC<FooterProps> = ({ name }) => {
                 </div>
                 <div className="float-end">
                     <p>
-                        &nbsp;Crafted with <span className="text-danger"><i className="bi bi-heart-fill icon-mid"></i></span> by <a href="#">{name}</a>
+                        <a href="#">{name}</a>
                     </p>
                 </div>
             </div>

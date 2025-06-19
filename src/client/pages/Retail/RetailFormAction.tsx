@@ -22,27 +22,6 @@ const RetailActionForm = () => {
     const [districtID, setDistrictID] = useState<{ value: number; label: string } | null>(null);
     const [villageID, setVillageID] = useState<{ value: number; label: string } | null>(null);
 
-    // const treeData = [{
-    //     key: 'province',
-    //     title: provinceID?.label || 'Province',
-    //     childern: [{
-    //         key: 'city',
-    //         title: cityID?.label || 'City',
-    //         childern: [{
-    //             key: 'district',
-    //             title: districtID?.label || 'District',
-    //             childern: [{
-    //                 key: 'village',
-    //                 title: villageID?.label || 'Village'
-    //             }]
-    //         }]
-    //     }]
-    // }]
-
-    // const onSelect = (selectedKeys: any, info: any) => {
-    //     console.log('Selected:', selectedKeys, info);
-    // };
-
     const [isUpdate, setIsUpdate] = useState<boolean>(false)
 
     const onReset = () => {
@@ -234,10 +213,16 @@ const RetailActionForm = () => {
 
             const data = await res.json();
 
-            if (data.status) {
+            if (res.ok) {
+                localStorage.setItem('successMessage', `Data has been ${isUpdate ? 'updated' : 'added'} successfully!`);
                 nav('/retail');
             } else {
-                setErrorMessage(data.message);
+                if (res.status === 409) {
+                    alert(data.message)
+                }
+                if (res.status == 422) {
+                    setErrorMessage(data.message);
+                }
             }
         } catch (error: any) {
             console.log(error);
@@ -260,7 +245,7 @@ const RetailActionForm = () => {
                                     <Link to="/">Dashboard</Link>
                                 </li>
                                 <li className="breadcrumb-item">
-                                    <Link to="/retails">Datatable Retails</Link>
+                                    <Link to="/retail">Datatable Retails</Link>
                                 </li>
                                 <li className="breadcrumb-item active" aria-current="page">{isUpdate ? 'Update Retails' : 'Create Retails'}</li>
                             </ol>
@@ -277,8 +262,8 @@ const RetailActionForm = () => {
                                     <div className="row">
                                         <div className="col-12">
                                             <div className="form-group">
-                                                <label htmlFor="retailName">Retail Name</label>
-                                                <input className="form-control" type="text" id="retailName" value={retailName} onChange={(e) => setRetailName(e.target.value)} />
+                                                <label htmlFor="retailName">Retail Name <span className="text-danger">*</span></label>
+                                                <input className="form-control" type="text" id="retailName" value={retailName} onChange={(e) => setRetailName(e.target.value)} placeholder="cth: Retail/Toko Basudara" />
                                                 {errorMessage && retailName === '' && (
                                                     <span className="text-danger">
                                                         Retail Name must be filled
@@ -286,14 +271,9 @@ const RetailActionForm = () => {
                                                 )}
                                             </div>
                                         </div>
-                                        {/* <div className="col-12">
-                                            <div className="form-group">
-                                                <Tree treeData={treeData} defaultExpandAll onSelect={onSelect} />
-                                            </div>
-                                        </div> */}
                                         <div className="col-12">
                                             <div className="form-group">
-                                                <label>Province</label>
+                                                <label>Province <span className="text-danger">*</span></label>
                                                 <AsyncSelect
                                                     cacheOptions
                                                     defaultOptions
@@ -330,7 +310,7 @@ const RetailActionForm = () => {
                                         </div>
                                         <div className="col-12">
                                             <div className="form-group">
-                                                <label>City</label>
+                                                <label>City <span className="text-danger">*</span></label>
                                                 <AsyncSelect
                                                     cacheOptions
                                                     isClearable
@@ -366,7 +346,7 @@ const RetailActionForm = () => {
                                         </div>
                                         <div className="col-12">
                                             <div className="form-group">
-                                                <label>District</label>
+                                                <label>District <span className="text-danger">*</span></label>
                                                 <AsyncSelect
                                                     cacheOptions
                                                     isClearable
@@ -401,7 +381,7 @@ const RetailActionForm = () => {
                                         </div>
                                         <div className="col-12">
                                             <div className="form-group">
-                                                <label>Village</label>
+                                                <label>Village <span className="text-danger">*</span></label>
                                                 <AsyncSelect
                                                     cacheOptions
                                                     isClearable
@@ -424,6 +404,11 @@ const RetailActionForm = () => {
                                                         },
                                                     })}
                                                 />
+                                                {errorMessage && villageID === null && (
+                                                    <span className="text-danger">
+                                                        Village must be filled
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="col-12">

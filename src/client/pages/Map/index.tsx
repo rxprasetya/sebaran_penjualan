@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, FeatureGroup, Polyline, Polygon } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, FeatureGroup, Polygon } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L, { LatLngExpression, LatLngTuple } from 'leaflet';
 
@@ -192,6 +192,8 @@ const Map: React.FC = () => {
         }> = {};
 
         for (const item of details) {
+            if (!item.retailName || !item.retailAddress) continue;
+
             const key = `${item.retailName}||${item.retailAddress}`;
             if (!grouped[key]) {
                 grouped[key] = {
@@ -202,8 +204,8 @@ const Map: React.FC = () => {
                 };
             }
 
-            grouped[key].products.add(item.productName);
-            grouped[key].competitors.add(item.competitorName);
+            if (item.productName) grouped[key].products.add(item.productName);
+            if (item.competitorName) grouped[key].competitors.add(item.competitorName);
         }
 
         return Object.values(grouped).map(g => ({
@@ -212,6 +214,36 @@ const Map: React.FC = () => {
             products: Array.from(g.products),
             competitors: Array.from(g.competitors)
         }));
+    }
+
+    function getUniqueProducts(details: MapData['details']): string[] {
+        return Array.from(
+            new Set(
+                details
+                    .map(d => d.productName)
+                    .filter(p => p && p.trim() !== '')
+            )
+        );
+    }
+
+    function getUniqueCompetitors(details: MapData['details']): string[] {
+        return Array.from(
+            new Set(
+                details
+                    .map(d => d.competitorName)
+                    .filter(c => c && c.trim() !== '')
+            )
+        );
+    }
+
+    function getUniqueRetails(details: MapData['details']): string[] {
+        return Array.from(
+            new Set(
+                details
+                    .map(d => d.retailName)
+                    .filter(p => p && p.trim() !== '')
+            )
+        );
     }
 
     useEffect(() => {
@@ -309,22 +341,32 @@ const Map: React.FC = () => {
                         {selectedMarker.village && `, ${selectedMarker.village}`}
                     </p>
                     <hr />
-                    <h5>Produk & Kompetitor</h5>
-                    {groupDetails(selectedMarker.details).map((d, idx) => (
-                        <div key={idx} style={{ marginBottom: '1rem' }}>
-                            <h6>{d.retailName}</h6>
-                            <p>
-                                <strong>Alamat:</strong> {d.retailAddress}
-                                <br />
-                                <strong>Produk:</strong> {d.products.join(', ')}
-                                <br />
-                                <strong>Kompetitor:</strong> {d.competitors.join(', ')}
-                            </p>
-                        </div>
-                    ))}
-                </div>
+                    <h5>Products</h5>
+                    {getUniqueProducts(selectedMarker.details).length === 0 ? (
+                        <p>No product available</p>
+                    ) : (
+                        <p>{getUniqueProducts(selectedMarker.details).join(', ')}</p>
+                    )
+                    }
+
+                    <hr />
+                    <h5>Competitors</h5>
+                    {getUniqueCompetitors(selectedMarker.details).length === 0 ? (
+                        <p>No competitor available</p>
+                    ) : (
+                        <p>{getUniqueCompetitors(selectedMarker.details).join(', ')}</p>
+                    )
+                    }
+                    <hr />
+                    <h5>Retails</h5>
+                    {getUniqueRetails(selectedMarker.details).length === 0 ? (
+                        <p>No retail available</p>
+                    ) : (
+                        <p>{getUniqueRetails(selectedMarker.details).join(', ')}</p>
+                    )}
+                </div >
             )}
-        </div>
+        </div >
     );
 };
 

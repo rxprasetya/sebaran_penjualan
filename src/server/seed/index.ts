@@ -12,9 +12,9 @@ async function seed() {
     }
 
     await db.insert(users).values({
-        name: 'admin',
-        username: 'admin',
-        password: CryptoJs.AES.encrypt(JSON.stringify('123123123'), process.env.SECRET_KEY!).toString(),
+        name: 'ZENISH',
+        username: 'ZENISH',
+        password: CryptoJs.AES.encrypt(JSON.stringify('ACC4ZENISH'), process.env.SECRET_KEY!).toString(),
     });
 
     console.log('Seed successful');

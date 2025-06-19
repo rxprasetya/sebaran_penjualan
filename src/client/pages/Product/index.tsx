@@ -30,7 +30,7 @@ const Product = () => {
 
         const result = await swalWithBootstrapButtons.fire({
             title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            text: "This data is linked to other important records. Deleting it may affect related information. Are you sure you want to proceed?",
             icon: "warning",
             showCancelButton: true,
             confirmButtonText: "Confirm",
@@ -38,15 +38,47 @@ const Product = () => {
         });
 
         if (result.isConfirmed) {
-            try {
-                const res = await fetch('http://localhost:3000/api/products/delete/' + id, { method: 'DELETE' })
-                const data = await res.json()
-                window.location.reload()
-            } catch (error: any) {
-                console.log(error)
+            const result2 = await swalWithBootstrapButtons.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "error",
+                showCancelButton: true,
+                confirmButtonText: "Delete it",
+                cancelButtonText: "Cancel",
+            })
+            if (result2.isConfirmed) {
+                try {
+                    const res = await fetch('http://localhost:3000/api/products/delete/' + id, { method: 'DELETE' })
+
+                    if (res.ok) {
+                        fetchProduct()
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: 'Data has been deleted successfully.',
+                            showConfirmButton: true
+                        });
+                    }
+                } catch (error: any) {
+                    console.log(error)
+                }
             }
         }
     }
+
+    useEffect(() => {
+        const successMessage = localStorage.getItem('successMessage');
+        if (successMessage) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: successMessage,
+                showConfirmButton: true
+            });
+
+            localStorage.removeItem('successMessage');
+        }
+    }, []);
 
     useEffect(() => {
         fetchProduct()
@@ -90,33 +122,41 @@ const Product = () => {
                                     <th>No</th>
                                     <th>Code</th>
                                     <th>Name</th>
-                                    <th>Competitor</th>
-                                    <th>Village</th>
+                                    {/* <th>Competitor</th>
+                                    <th>Village</th> */}
                                     {/* <th>Image</th> */}
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {products.map((item: any, idx: number) => (
-                                    <tr key={idx}>
-                                        <td>{idx + 1}</td>
-                                        <td>{item.productCode}</td>
-                                        <td>{item.productName}</td>
-                                        <td>{item.competitorName}</td>
-                                        <td>{item.villageName}</td>
-                                        {/* <td>
-                                            {item.productImage !== null &&
-                                                <img className='w-10' src={item.competitorImage} alt={item.productName} />
-                                            }
-                                        </td> */}
-                                        <td className='w-25'>
-                                            <div className="flex">
-                                                <Link className='badge bg-success me-2' to={`/product/update/${item.id}`}>Update</Link>
-                                                <Link className='badge bg-danger' to={`#`} onClick={() => onDelete(item.id)}>Delete</Link>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {
+                                    products.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={4} className="text-center">No records found.</td>
+                                        </tr>
+                                    ) : (
+                                        products.map((item: any, idx: number) => (
+                                            <tr key={idx}>
+                                                <td>{idx + 1}</td>
+                                                <td>{item.productCode}</td>
+                                                <td>{item.productName}</td>
+                                                <td className='w-25'>
+                                                    <div className="flex">
+                                                        <Link className='badge bg-primary me-2' to={`/product/preview/${item.id}`}>
+                                                            <i className="bi bi-eye"></i>
+                                                        </Link>
+                                                        <Link className='badge bg-success me-2' to={`/product/update/${item.id}`}>
+                                                            <i className="bi bi-pencil-square"></i>
+                                                        </Link>
+                                                        <Link className='badge bg-danger' to={`#`} onClick={() => onDelete(item.id)}>
+                                                            <i className="bi bi-trash"></i>
+                                                        </Link>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )
+                                }
                             </tbody>
                         </table>
                     </div>

@@ -5,6 +5,7 @@ import loginImage from '../../templates/dist/assets/compiled/png/login.png'
 function Login() {
     const nav = useNavigate();
 
+    const [errorText, setErrorText] = useState<{ status: number, message: string }>({ status: 0, message: '' })
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
 
@@ -14,6 +15,7 @@ function Login() {
 
     const onLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setErrorText({ status: 0, message: '' })
 
         try {
             const res = await fetch('http://localhost:3000/api/login/', {
@@ -24,18 +26,27 @@ function Login() {
                 body: JSON.stringify({ username, password }),
             });
 
+            const status = res.status;
             const data = await res.json();
 
-            if (data.status) {
-                localStorage.setItem('auth', JSON.stringify(data.token));
+            // console.log(data.data.username);
+            
+            if (res.ok && data.status) {
+                localStorage.setItem('auth', JSON.stringify(data.data.token));
+                localStorage.setItem('user', data.data.username);
                 nav('/', { replace: true });
             } else {
-                alert(data.message || 'Username atau password salah!');
+                setErrorText({ status, message: data.message });
+
+                if (username !== '' && password !== '') {
+                    alert(`${data.message}`);
+                }
             }
         } catch (error) {
             alert('Gagal login: ' + error);
         }
     };
+
 
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -60,16 +71,29 @@ function Login() {
                         <form onSubmit={onLogin}>
                             <div className="form-group position-relative has-icon-left mb-4">
                                 <input type="text" className="form-control form-control-xl" placeholder="Username" onChange={(e) => setUsername(e.target.value)} />
-
                                 <div className="form-control-icon">
                                     <i className="bi bi-person"></i>
                                 </div>
+                                {errorText.status === 400 && username === '' && (
+                                    <>
+                                        <span className='text-danger'>
+                                            Username must be filled
+                                        </span>
+                                    </>
+                                )}
                             </div>
                             <div className="form-group position-relative has-icon-left mb-4">
                                 <input type="password" className="form-control form-control-xl" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
                                 <div className="form-control-icon">
                                     <i className="bi bi-shield-lock"></i>
                                 </div>
+                                {errorText.status === 400 && password === '' && (
+                                    <>
+                                        <span className='text-danger'>
+                                            Password must be filled
+                                        </span>
+                                    </>
+                                )}
                             </div>
                             <button className="btn btn-primary btn-block btn-lg shadow-lg mt-5" id="btn-login">Log in</button>
                         </form>

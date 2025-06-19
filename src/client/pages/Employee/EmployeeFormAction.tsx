@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
+import ImageCropper from '../../components/ImageCropper';
+import React, { useRef } from 'react';
 
 type Employee = {
     id: number;
@@ -12,10 +14,17 @@ type Employee = {
 };
 
 const EmployeeFormAction = () => {
-    const [errorMessage, setErrorMessage] = useState<string>('');
+    const cropperRef = useRef<{ crop: () => void }>(null);
+    const [key, setKey] = React.useState(Math.random());
+
+    const [errorMessage, setErrorMessage] = useState<{ [key: string]: string }>({});
     const [employeeCode, setEmployeeCode] = useState<string>('')
     const [employeeName, setEmployeeName] = useState<string>('')
     const [employeePosition, setEmployeePosition] = useState<string>('');
+
+    const [showCropper, setShowCropper] = useState<boolean>(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
     const [employeeImage, setEmployeeImage] = useState<File | string>('');
     const [employeeColor, setEmployeeColor] = useState<string>('');
     const [employeeParentID, setEmployeeParentID] = useState<number | string>('');
@@ -65,7 +74,6 @@ const EmployeeFormAction = () => {
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setErrorMessage('');
 
         try {
             const formData = new FormData();
@@ -94,10 +102,20 @@ const EmployeeFormAction = () => {
 
             const data = await res.json();
 
-            if (data.status) {
+            if (res.ok) {
+                localStorage.setItem('successMessage', `Data has been ${isUpdate ? 'updated' : 'added'} successfully!`);
                 nav('/employee');
             } else {
-                setErrorMessage(data.message);
+                if (res.status === 409) {
+                    alert(data.message)
+                }
+                if (res.status === 422) {
+                    const errorObj: { [key: string]: string } = {};
+                    data.errors.forEach((err: any) => {
+                        errorObj[err.path] = err.msg;
+                    });
+                    setErrorMessage(errorObj);
+                }
             }
 
         } catch (error: any) {
@@ -138,33 +156,41 @@ const EmployeeFormAction = () => {
                                     <div className="row">
                                         <div className="col-12">
                                             <div className="form-group">
-                                                <label htmlFor="employeeCode">Code</label>
+                                                <label htmlFor="employeeCode">Code <span className="text-danger">*</span></label>
                                                 <input type="text" id="employeeCode" className="form-control"
-                                                    value={employeeCode} onChange={(e) => setEmployeeCode(e.target.value)} placeholder="cth: KS001" />
-                                                {errorMessage && employeeCode === '' && (
-                                                    <span className="text-danger">
-                                                        {errorMessage}: Code
-                                                    </span>
+                                                    value={employeeCode}
+                                                    onChange={(e) => {
+                                                        setEmployeeCode(e.target.value)
+                                                        setErrorMessage(prev => ({ ...prev, employeeCode: '' }))
+                                                    }}
+                                                    placeholder="cth: KS001" />
+                                                {errorMessage['employeeCode'] && (
+                                                    <span className="text-danger">{errorMessage['employeeCode']}</span>
                                                 )}
                                             </div>
                                         </div>
                                         <div className="col-12">
                                             <div className="form-group">
-                                                <label htmlFor="employeeName">Name</label>
+                                                <label htmlFor="employeeName">Name <span className="text-danger">*</span></label>
                                                 <input type="text" id="employeeName" className="form-control"
-                                                    value={employeeName} onChange={(e) => setEmployeeName(e.target.value)} placeholder="cth: Rxxx Axxx Pxxx" />
-                                                {errorMessage && employeeName === '' && (
-                                                    <span className="text-danger">
-                                                        {errorMessage}: Name
-                                                    </span>
-
+                                                    value={employeeName}
+                                                    onChange={(e) => {
+                                                        setEmployeeName(e.target.value);
+                                                        setErrorMessage(prev => ({ ...prev, employeeName: '' }));
+                                                    }} placeholder="cth: Rxxx Axxx Pxxx" />
+                                                {errorMessage['employeeName'] && (
+                                                    <span className="text-danger">{errorMessage['employeeName']}</span>
                                                 )}
                                             </div>
                                         </div>
                                         <div className="col-12">
                                             <div className="form-group">
-                                                <label htmlFor="employeePosition">Position</label>
-                                                <select id="employeePosition" className="form-control" value={employeePosition} onChange={(e) => setEmployeePosition(e.target.value)}>
+                                                <label htmlFor="employeePosition">Position <span className="text-danger">*</span></label>
+                                                <select id="employeePosition" className="form-control" value={employeePosition}
+                                                    onChange={(e) => {
+                                                        setEmployeePosition(e.target.value)
+                                                        setErrorMessage(prev => ({ ...prev, employeePosition: '' }))
+                                                    }}>
                                                     <option value="" hidden>-- Select Position --</option>
                                                     <option value="Manager">Manager</option>
                                                     <option value="Koordinator">Koor KA</option>
@@ -172,11 +198,8 @@ const EmployeeFormAction = () => {
                                                     <option value="Kepala Sales">Kepala Sales</option>
                                                     <option value="Sales">Sales</option>
                                                 </select>
-                                                {errorMessage && employeePosition === '' && (
-                                                    <span className="text-danger">
-                                                        {errorMessage}: Position
-                                                    </span>
-
+                                                {errorMessage['employeePosition'] && (
+                                                    <span className="text-danger">{errorMessage['employeePosition']}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -184,37 +207,44 @@ const EmployeeFormAction = () => {
                                             <div className="form-group">
                                                 <label htmlFor="employeeImage">Image</label>
                                                 <input type="file" id="employeeImage" className="form-control"
-                                                    onChange={(e) => setEmployeeImage(e.target.files?.[0] || '')} />
-                                            </div>
-                                        </div>
-                                        <div className="col-12">
-                                            <div className="form-group">
-                                                <label htmlFor="employeeColor">Color (for Sales)</label>
-                                                <input type="color" id="employeeColor" className="form-control" value={employeeColor || '#000000'} onChange={(e) => setEmployeeColor(e.target.value)} />
-                                            </div>
-                                        </div>
-                                        <div className="col-12">
-                                            <div className="form-group">
-                                                <label htmlFor="employeeParentID">Leader (unless Manager)</label>
-                                                <select
-                                                    id="employeeParentID"
-                                                    className="form-control"
-                                                    value={employeeParentID !== null && employeeParentID !== undefined ? employeeParentID.toString() : ''}
+                                                    accept="image/png, image/jpeg, image/jpg, image/webp"
+                                                    key={key}
                                                     onChange={(e) => {
-                                                        const val = e.target.value;
-                                                        setEmployeeParentID(val === '' ? '' : parseInt(val, 10));
-                                                    }}
-                                                >
-                                                    <option value="">-- Select Leader --</option>
-                                                    {employeeLeader.map((leader) => (
-                                                        <option key={leader.id} value={leader.id}>[ {leader.employeeCode} ] {leader.employeeName} - {leader.employeePosition}</option>
-                                                    ))}
-                                                </select>
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            setSelectedFile(file);
+                                                            setShowCropper(true);
+                                                        }
+                                                    }} />
                                             </div>
                                         </div>
-                                        {errorMessage && employeeCode && employeeName && employeePosition === 'Sales' && (
-                                            <div className="col-12 mb-2">
-                                                <span className="text-danger">{errorMessage}</span>
+                                        {employeePosition === 'Sales' && (
+                                            <div className="col-12">
+                                                <div className="form-group">
+                                                    <label htmlFor="employeeColor">Color</label>
+                                                    <input type="color" id="employeeColor" className="form-control" value={employeeColor || '#000000'} onChange={(e) => setEmployeeColor(e.target.value)} />
+                                                </div>
+                                            </div>
+                                        )}
+                                        {employeePosition && employeePosition !== 'Manager' && (
+                                            <div className="col-12">
+                                                <div className="form-group">
+                                                    <label htmlFor="employeeParentID">Leader</label>
+                                                    <select
+                                                        id="employeeParentID"
+                                                        className="form-control"
+                                                        value={employeeParentID !== null && employeeParentID !== undefined ? employeeParentID.toString() : ''}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            setEmployeeParentID(val === '' ? '' : parseInt(val, 10));
+                                                        }}
+                                                    >
+                                                        <option value="">-- Select Leader --</option>
+                                                        {employeeLeader.map((leader) => (
+                                                            <option key={leader.id} value={leader.id}>[ {leader.employeeCode} ] {leader.employeeName} - {leader.employeePosition}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
                                             </div>
                                         )}
                                         <div className="col-12 d-flex justify-content-end">
@@ -225,6 +255,46 @@ const EmployeeFormAction = () => {
                                     </div>
                                 </div>
                             </form>
+                            {selectedFile && (
+                                <div className={`modal fade text-left ${showCropper ? 'show d-block' : ''}`} aria-labelledby="myModalLabel1" aria-modal="true" tabIndex={-1} role="dialog">
+                                    <div className="modal-dialog modal-dialog-scrollable" role="document">
+                                        <div className="modal-content">
+                                            <div className="modal-header">
+                                                <h5 className="modal-title" id="myModalLabel1">Basic Modal</h5>
+                                                <button type="button" className="btn-close" onClick={() => {
+                                                    setShowCropper(false);
+                                                    setSelectedFile(null);
+                                                }} />
+                                            </div>
+                                            <div className="modal-body">
+                                                <ImageCropper
+                                                    ref={cropperRef}
+                                                    file={selectedFile}
+                                                    onCropComplete={(croppedFile) => {
+                                                        setEmployeeImage(croppedFile);
+                                                        setShowCropper(false);
+                                                        setSelectedFile(null);
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="modal-footer">
+                                                <button type="button" className="btn btn-secondary" onClick={() => {
+                                                    setShowCropper(false);
+                                                    setSelectedFile(null);
+                                                    setKey(Math.random());
+                                                }}>
+                                                    Cancel
+                                                </button>
+                                                <button type="button" className="btn btn-primary" onClick={() => {
+                                                    cropperRef.current?.crop();
+                                                }}>
+                                                    Crop
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -1,4 +1,3 @@
-import Tree from "rc-tree"
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import AsyncSelect from 'react-select/async'
@@ -28,27 +27,6 @@ const SalesCoverageAreaActionForm = () => {
     const [cityID, setCityID] = useState<{ value: number; label: string } | null>(null);
     const [districtID, setDistrictID] = useState<{ value: number; label: string } | null>(null);
     const [villageID, setVillageID] = useState<{ value: number; label: string } | null>(null);
-
-    // const treeData = [{
-    //     key: 'province',
-    //     title: provinceID?.label || 'Province',
-    //     childern: [{
-    //         key: 'city',
-    //         title: cityID?.label || 'City',
-    //         childern: [{
-    //             key: 'district',
-    //             title: districtID?.label || 'District',
-    //             childern: [{
-    //                 key: 'village',
-    //                 title: villageID?.label || 'Village'
-    //             }]
-    //         }]
-    //     }]
-    // }]
-
-    // const onSelect = (selectedKeys: any, info: any) => {
-    //     console.log('Selected:', selectedKeys, info);
-    // };
 
     const [isUpdate, setIsUpdate] = useState<boolean>(false)
 
@@ -250,10 +228,16 @@ const SalesCoverageAreaActionForm = () => {
 
             const data = await res.json();
 
-            if (data.status) {
+            if (res.ok) {
+                localStorage.setItem('successMessage', `Data has been ${isUpdate ? 'updated' : 'added'} successfully!`);
                 nav('/sales-coverage-area');
             } else {
-                setErrorMessage(data.message);
+                if (res.status === 409) {
+                    alert(data.message)
+                }
+                if (res.status == 422) {
+                    setErrorMessage(data.message);
+                }
             }
         } catch (error: any) {
             console.log(error);
@@ -293,7 +277,7 @@ const SalesCoverageAreaActionForm = () => {
                                     <div className="row">
                                         <div className="col-12">
                                             <div className="form-group">
-                                                <label htmlFor="employeeID">Sales</label>
+                                                <label htmlFor="employeeID">Sales <span className="text-danger">*</span></label>
                                                 <select id="employeeID" className="form-control" value={employeeID} onChange={(e) => setEmployeeID(e.target.value)}>
                                                     <option value="" hidden>-- Select Sales --</option>
                                                     {sales.map((item: any, idx: number) => (
@@ -307,14 +291,9 @@ const SalesCoverageAreaActionForm = () => {
                                                 )}
                                             </div>
                                         </div>
-                                        {/* <div className="col-12">
-                                            <div className="form-group">
-                                                <Tree treeData={treeData} defaultExpandAll onSelect={onSelect} />
-                                            </div>
-                                        </div> */}
                                         <div className="col-12">
                                             <div className="form-group">
-                                                <label>Province</label>
+                                                <label>Province <span className="text-danger">*</span></label>
                                                 <AsyncSelect
                                                     cacheOptions
                                                     defaultOptions
@@ -351,7 +330,7 @@ const SalesCoverageAreaActionForm = () => {
                                         </div>
                                         <div className="col-12">
                                             <div className="form-group">
-                                                <label>City</label>
+                                                <label>City <span className="text-danger">*</span></label>
                                                 <AsyncSelect
                                                     cacheOptions
                                                     isClearable
@@ -387,7 +366,7 @@ const SalesCoverageAreaActionForm = () => {
                                         </div>
                                         <div className="col-12">
                                             <div className="form-group">
-                                                <label>District</label>
+                                                <label>District <span className="text-danger">*</span></label>
                                                 <AsyncSelect
                                                     cacheOptions
                                                     isClearable
@@ -422,7 +401,7 @@ const SalesCoverageAreaActionForm = () => {
                                         </div>
                                         <div className="col-12">
                                             <div className="form-group">
-                                                <label>Village</label>
+                                                <label>Village <span className="text-danger">*</span></label>
                                                 <AsyncSelect
                                                     cacheOptions
                                                     isClearable
@@ -445,6 +424,11 @@ const SalesCoverageAreaActionForm = () => {
                                                         },
                                                     })}
                                                 />
+                                                {errorMessage && villageID === null && (
+                                                    <span className="text-danger">
+                                                        Village must be filled
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="col-12 d-flex justify-content-end">

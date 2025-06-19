@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
+import Swal from "sweetalert2";
 
 interface SidebarProps {
     CustomComponent: React.ComponentType;
@@ -40,38 +41,45 @@ const Sidebar: React.FC<SidebarProps> = ({ CustomComponent }) => {
         localStorage.setItem("openSubMenu", String(openSubMenu));
     }, [isOpen, openSubMenu]);
 
-    const onLogout = () => {
-        localStorage.removeItem('auth');
-        nav('/login');
+    const onLogout = async () => {
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-success py-2 px-3 me-3",
+                cancelButton: "btn btn-danger py-2 px-3"
+            },
+            buttonsStyling: false
+        });
+
+        const result = await swalWithBootstrapButtons.fire({
+            title: "Are you sure?",
+            text: "You gonna log out from this web",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Confirm",
+            cancelButtonText: "Cancel",
+        });
+
+        if (result.isConfirmed) {
+            localStorage.removeItem('auth');
+            nav('/login');
+        }
     };
 
     // Helper function to determine active submenu
-    const isEmployeeActive =
-        location.pathname === "/employee" ||
-        location.pathname === "/employee/create" ||
-        location.pathname.startsWith("/employee/update");
+    const isEmployeeActive = location.pathname.startsWith("/employee")
 
-    const isProductActive =
-        location.pathname === "/product" ||
-        location.pathname === "/product/create" ||
-        location.pathname.startsWith("/product/update");
+    const isProductActive = location.pathname.startsWith("/product")
 
-    const isSalesAreaActive =
-        location.pathname === "/sales-coverage-area" ||
-        location.pathname === "/sales-coverage-area/create" ||
-        location.pathname.startsWith("/sales-coverage-area/update");
+    const isSalesAreaActive = location.pathname.startsWith("/sales-coverage-area");
 
-    const isRetailActive =
-        location.pathname === "/retail" ||
-        location.pathname === "/retail/create" ||
-        location.pathname.startsWith("/retail/update");
+    const isRetailActive = location.pathname.startsWith("/retail");
 
     const isMasterMenuActive = isEmployeeActive || isProductActive || isSalesAreaActive || isRetailActive;
 
     return (
         <div id="app">
             <div id="sidebar">
-                <div className={`sidebar-wrapper ${isOpen ? "active" : ""}`}>
+                <div className={`sidebar-wrapper ${isOpen ? "active" : ""}`} style={{ zIndex: 9999 }}>
                     <div className="sidebar-header position-relative">
                         <div className="d-flex justify-content-between align-items-center">
                             <div className="logo">
@@ -181,7 +189,7 @@ const Sidebar: React.FC<SidebarProps> = ({ CustomComponent }) => {
                     <CustomComponent />
                 </div>
 
-                <Footer name="Admin" />
+                <Footer name="Sebari.in" />
             </div>
         </div>
     );
